@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Academic Mistake Notebook",
+    "slug": "academic-mistake-notebook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/icon.svg",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./public/icon.svg",
+      "resizeMode": "contain",
+      "backgroundColor": "#1c1917"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rudra.academicmistakenotebook"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/icon.svg",
+        "backgroundColor": "#78350f"
+      },
+      "package": "com.rudra.academicmistakenotebook",
+      "permissions": [
+        "CAMERA",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./public/icon.svg"
+    },
+    "description": "Log academic errors, track revision status, practice flashcards, and manage study checklists for exams."
+  }
+}

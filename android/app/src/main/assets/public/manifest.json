@@ -1,0 +1,18 @@
+{
+  "short_name": "MistakeNotebook",
+  "name": "Academic Mistake Notebook",
+  "description": "Log academic errors, track revision status, and manage study checklists.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1c1917",
+  "theme_color": "#78350f",
+  "display": "standalone",
+  "orientation": "portrait"
+}

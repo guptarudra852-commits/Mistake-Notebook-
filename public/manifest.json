@@ -1,0 +1,47 @@
+{
+  "id": "com.rudra.academicmistakenotebook",
+  "name": "Academic Mistake Notebook",
+  "short_name": "MistakeNotebook",
+  "description": "Log academic errors, track revision status, practice flashcards, and manage study checklists for exams.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "window-controls-overlay"],
+  "orientation": "portrait-primary",
+  "background_color": "#1c1917",
+  "theme_color": "#78350f",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log New Mistake",
+      "short_name": "Log Mistake",
+      "description": "Quickly record a new study error",
+      "url": "/?action=new",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Study Checklist",
+      "short_name": "Checklist",
+      "description": "View exam preparation tasks",
+      "url": "/?view=checklist",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

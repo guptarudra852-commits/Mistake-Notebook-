@@ -1,0 +1,6 @@
+{
+	"appId": "com.rudra.academicmistakenotebook",
+	"appName": "Academic Mistake Notebook",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}
