@@ -69,6 +69,8 @@ export interface PracticeDrillItem {
   solution: string;
 }
 
+import { FaceDescriptor } from './utils/biometrics';
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -89,4 +91,7 @@ export interface UserPreferences {
   isPinLocked?: boolean;
   pushNotificationsEnabled?: boolean;
   gpsLocationTagging?: boolean;
+  biometricEnabled?: boolean;
+  registeredWebAuthnCredentialId?: string;
+  registeredFaceDescriptor?: FaceDescriptor;
 }

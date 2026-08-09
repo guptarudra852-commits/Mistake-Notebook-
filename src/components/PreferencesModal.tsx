@@ -14,9 +14,14 @@ import {
   Smartphone,
   ShieldCheck,
   CheckCircle2,
+  Fingerprint,
+  ScanFace,
+  Trash2,
+  Sparkles
 } from 'lucide-react';
 import { exportBackupData, importBackupData, resetToDefaultData } from '../utils/storage';
 import { UserPreferences } from '../types';
+import { registerWebAuthnPasskey } from '../utils/biometrics';
 
 interface PreferencesModalProps {
   isOpen: boolean;
@@ -69,6 +74,33 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
       }
     };
     reader.readAsText(file);
+  };
+
+  const handleRegisterPasskey = async () => {
+    try {
+      const credId = await registerWebAuthnPasskey('Notebook Owner');
+      if (credId) {
+        onUpdatePreferences({
+          ...preferences,
+          registeredWebAuthnCredentialId: credId,
+          biometricEnabled: true,
+        });
+        alert('System Passkey (Fingerprint / Touch ID / OS Hardware Lock) Enrolled Successfully! ✅');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to register biometric passkey.');
+    }
+  };
+
+  const handleClearBiometrics = () => {
+    if (window.confirm('Clear registered Face ID profile & System Fingerprint Passkey?')) {
+      onUpdatePreferences({
+        ...preferences,
+        registeredFaceDescriptor: undefined,
+        registeredWebAuthnCredentialId: undefined,
+        biometricEnabled: false,
+      });
+    }
   };
 
   const handleReset = () => {
@@ -199,24 +231,84 @@ export const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </label>
 
               {preferences.isPinLocked && (
-                <div className="space-y-1.5 pl-6">
-                  <label className="block text-[11px] font-semibold text-stone-700">
-                    4-Digit PIN Code:
-                  </label>
-                  <input
-                    type="password"
-                    maxLength={4}
-                    value={pinInput}
-                    onChange={(e) => {
-                      setPinInput(e.target.value);
-                      onUpdatePreferences({ ...preferences, pinLockCode: e.target.value });
-                    }}
-                    placeholder="1234"
-                    className="w-32 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-lg text-xs font-mono font-bold text-center tracking-widest text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                  <p className="text-[10px] text-stone-500">
-                    When enabled, opening the app requires entering this 4-digit PIN or using TouchID/FaceID.
-                  </p>
+                <div className="space-y-3 pl-2 pt-2 border-t border-amber-100">
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-semibold text-stone-700">
+                      4-Digit PIN Code:
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={4}
+                      value={pinInput}
+                      onChange={(e) => {
+                        setPinInput(e.target.value);
+                        onUpdatePreferences({ ...preferences, pinLockCode: e.target.value });
+                      }}
+                      placeholder="1234"
+                      className="w-32 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-lg text-xs font-mono font-bold text-center tracking-widest text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+
+                  {/* Registered Biometric Status Indicators & Setup */}
+                  <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200/80 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-amber-950">
+                      <span className="flex items-center space-x-1">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Biometric Enrolled Profiles</span>
+                      </span>
+                      {(preferences.registeredFaceDescriptor || preferences.registeredWebAuthnCredentialId) && (
+                        <button
+                          type="button"
+                          onClick={handleClearBiometrics}
+                          className="text-[10px] text-rose-700 hover:underline flex items-center space-x-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Clear Biometrics</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 text-[11px] text-stone-700">
+                      {/* Face ID Status */}
+                      <div className="flex items-center justify-between p-1.5 bg-white rounded-lg border border-amber-200">
+                        <span className="flex items-center space-x-1.5 font-medium">
+                          <ScanFace className="w-4 h-4 text-amber-700" />
+                          <span>Owner Face ID Profile:</span>
+                        </span>
+                        {preferences.registeredFaceDescriptor ? (
+                          <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">
+                            Registered ✅
+                          </span>
+                        ) : (
+                          <span className="text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded">
+                            Not Enrolled
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Fingerprint / Passkey Status */}
+                      <div className="flex items-center justify-between p-1.5 bg-white rounded-lg border border-amber-200">
+                        <span className="flex items-center space-x-1.5 font-medium">
+                          <Fingerprint className="w-4 h-4 text-amber-700" />
+                          <span>System Passkey (Fingerprint):</span>
+                        </span>
+                        {preferences.registeredWebAuthnCredentialId ? (
+                          <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">
+                            Active Passkey ✅
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleRegisterPasskey}
+                            className="text-amber-950 font-bold bg-amber-300 hover:bg-amber-400 px-2.5 py-1 rounded-lg text-[10px] shadow-sm flex items-center space-x-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>Enroll Passkey</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

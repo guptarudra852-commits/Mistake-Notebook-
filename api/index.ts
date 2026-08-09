@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import aiRouter from "../src/server/aiRouter";
 
 const app = express();
 
@@ -35,5 +36,8 @@ app.get("/sw.js", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// AI features router
+app.use("/api/ai", aiRouter);
 
 export default app;

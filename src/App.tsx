@@ -268,6 +268,11 @@ export default function App() {
     return (
       <PinLockScreen
         correctPin={preferences.pinLockCode || '1234'}
+        preferences={preferences}
+        onUpdatePreferences={(newP) => {
+          setPreferences(newP);
+          savePreferences(newP);
+        }}
         onUnlock={() => setIsUnlocked(true)}
       />
     );

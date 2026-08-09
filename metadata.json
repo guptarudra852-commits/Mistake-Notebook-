@@ -1,6 +1,6 @@
 {
   "name": "Academic Mistake Notebook",
   "description": "An interactive notebook ecosystem for logging academic mistakes, subject categorization, and Sunday revision checklists.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
