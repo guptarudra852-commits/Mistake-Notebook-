@@ -176,29 +176,28 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col space-y-2">
-                {isCameraActive && (
-                  <button
-                    onClick={handleTakeSnapshot}
-                    className="w-full py-3 px-4 bg-amber-400 text-amber-950 rounded-xl font-bold text-xs hover:bg-amber-300 flex items-center justify-center space-x-2 shadow-lg min-h-[48px] touch-manipulation"
-                  >
-                    <Camera className="w-5 h-5" />
-                    <span>Snap Photo</span>
-                  </button>
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                  {isCameraActive && (
+                    <button
+                      onClick={handleTakeSnapshot}
+                      className="py-3 px-4 bg-amber-400 text-amber-950 rounded-xl font-bold text-xs hover:bg-amber-300 flex items-center justify-center space-x-2 shadow-lg min-h-[48px] touch-manipulation"
+                    >
+                      <Camera className="w-5 h-5" />
+                      <span>Snap Photo</span>
+                    </button>
+                  )}
 
-                <label className="w-full py-3 px-4 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer min-h-[44px] touch-manipulation">
-                  <Upload className="w-4 h-4 text-amber-400" />
-                  <span>Upload Image from Gallery</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
+                  <label className={`py-3 px-4 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer min-h-[48px] touch-manipulation ${!isCameraActive ? 'col-span-full' : ''}`}>
+                    <Upload className="w-4 h-4 text-amber-400" />
+                    <span>Upload from Gallery</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
             )}
           </div>
         </div>

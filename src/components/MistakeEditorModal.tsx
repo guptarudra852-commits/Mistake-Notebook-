@@ -73,6 +73,19 @@ export const MistakeEditorModal: React.FC<MistakeEditorModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          setImageUrl(uploadEvent.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim().toLowerCase())) {
       setTags([...tags, tagInput.trim().toLowerCase()]);
@@ -320,7 +333,7 @@ export const MistakeEditorModal: React.FC<MistakeEditorModalProps> = ({
               <Camera className="w-3.5 h-3.5 text-amber-700" />
               <span>Problem Image / Photo Attachment</span>
             </label>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
               <input
                 type="text"
                 placeholder="Paste Image URL or snapshot photo data..."
@@ -328,6 +341,16 @@ export const MistakeEditorModal: React.FC<MistakeEditorModalProps> = ({
                 onChange={(e) => setImageUrl(e.target.value)}
                 className="flex-1 px-3 py-1.5 bg-white border border-amber-300 rounded-xl text-xs text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
               />
+              <label className="px-3 py-1.5 bg-amber-800 hover:bg-amber-900 text-amber-100 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 cursor-pointer shadow-sm transition-colors">
+                <Camera className="w-3.5 h-3.5 text-amber-300" />
+                <span>Upload Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileUpload}
+                  className="hidden"
+                />
+              </label>
               {imageUrl && (
                 <button
                   type="button"

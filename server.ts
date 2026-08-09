@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
+import aiRouter from "./src/server/aiRouter.js";
 
 dotenv.config();
 
@@ -45,6 +46,9 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  // AI features router
+  app.use("/api/ai", aiRouter);
 
   // Setup Vite or static serving
   if (process.env.NODE_ENV !== "production") {
