@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   CalendarCheck2,
   CheckCircle2,
@@ -16,6 +17,7 @@ import {
   CheckSquare,
   Square,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 import { MistakeEntry, Subject, MistakeType } from '../types';
 
@@ -45,6 +47,20 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
   onToggleSelect,
 }) => {
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
+  const [isSuccessAnimating, setIsSuccessAnimating] = useState<boolean>(false);
+
+  const handleMasteredClick = (id: string) => {
+    if (entry.revisionStatus !== 'mastered') {
+      setIsSuccessAnimating(true);
+      try {
+        if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+          navigator.vibrate([30, 50, 40]);
+        }
+      } catch {}
+      setTimeout(() => setIsSuccessAnimating(false), 1200);
+    }
+    onToggleMastered(id);
+  };
 
   // Mistake Type Badge styling
   const getMistakeTypeBadge = (type: MistakeType) => {
@@ -85,15 +101,24 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
   };
 
   return (
-    <div
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 24, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -16, scale: 0.96 }}
+      transition={{
+        duration: 0.35,
+        ease: [0.22, 1, 0.36, 1],
+        layout: { duration: 0.25 }
+      }}
       id={`mistake-card-${entry.id}`}
-      className={`relative rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border-2 overflow-hidden flex flex-col ${
+      className={`relative rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 border-2 overflow-hidden flex flex-col ${
         isSelected
           ? 'border-amber-500 ring-2 ring-amber-400 bg-amber-100/30'
           : entry.revisionStatus === 'mastered'
-          ? 'border-emerald-400/80 bg-emerald-50/30'
+          ? 'border-emerald-500/80 bg-emerald-50/40 shadow-emerald-500/10'
           : 'border-amber-200/90'
-      }`}
+      } ${isSuccessAnimating ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20' : ''}`}
     >
       {/* Left Spiral Notebook Ring Styling */}
       <div className="absolute left-0 top-0 bottom-0 w-8 bg-amber-100/80 border-r border-amber-200 flex flex-col justify-around py-4 z-10 select-none">
@@ -288,19 +313,56 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
 
           <div className="flex items-center space-x-2">
             
-            {/* Toggle Mastered */}
-            <button
-              onClick={() => onToggleMastered(entry.id)}
-              id={`toggle-mastered-${entry.id}`}
-              className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                entry.revisionStatus === 'mastered'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-stone-200 hover:bg-stone-300 text-stone-800'
-              }`}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{entry.revisionStatus === 'mastered' ? 'Mastered!' : 'Mark Mastered'}</span>
-            </button>
+            {/* Toggle Mastered Button with Success Animation */}
+            <div className="relative">
+              <AnimatePresence>
+                {isSuccessAnimating && (
+                  <>
+                    {/* Expanding Success Ring Wave */}
+                    <motion.span
+                      initial={{ scale: 0.8, opacity: 0.9 }}
+                      animate={{ scale: 1.8, opacity: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.7, ease: "easeOut" }}
+                      className="absolute inset-0 rounded-lg border-2 border-emerald-500 bg-emerald-400/30 pointer-events-none"
+                    />
+                    {/* Floating Sparkle Tooltip Popup */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 0, scale: 0.6 }}
+                      animate={{ opacity: [0, 1, 1, 0], y: -28, scale: [0.6, 1.1, 1, 0.9] }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1.1, ease: "easeOut" }}
+                      className="absolute -top-7 right-0 z-30 pointer-events-none flex items-center space-x-1 px-2.5 py-1 bg-emerald-600 text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-300 whitespace-nowrap"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                      <span>Mastered! 🎉</span>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+
+              <motion.button
+                whileTap={{ scale: 0.90 }}
+                whileHover={{ scale: 1.05 }}
+                animate={isSuccessAnimating ? { scale: [1, 1.18, 0.95, 1.05, 1] } : {}}
+                transition={{ duration: 0.4 }}
+                onClick={() => handleMasteredClick(entry.id)}
+                id={`toggle-mastered-${entry.id}`}
+                className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  entry.revisionStatus === 'mastered'
+                    ? 'bg-emerald-600 text-white shadow-sm hover:bg-emerald-700'
+                    : 'bg-stone-200 hover:bg-emerald-100 hover:text-emerald-900 text-stone-800 border border-stone-300'
+                }`}
+              >
+                <motion.div
+                  animate={isSuccessAnimating ? { rotate: [0, -25, 25, -10, 0], scale: [1, 1.35, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  <CheckCircle2 className={`w-3.5 h-3.5 ${entry.revisionStatus === 'mastered' ? 'text-white' : 'text-emerald-600'}`} />
+                </motion.div>
+                <span>{entry.revisionStatus === 'mastered' ? 'Mastered!' : 'Mark Mastered'}</span>
+              </motion.button>
+            </div>
 
             {/* Edit */}
             <button
@@ -330,6 +392,6 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'motion/react';
 import {
   getSavedMistakes,
   saveMistakes,
@@ -385,24 +386,26 @@ export default function App() {
 
                   {/* Cards Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filteredMistakes.map((entry) => (
-                      <MistakeCard
-                        key={entry.id}
-                        entry={entry}
-                        subject={subjects.find((s) => s.id === entry.subjectId)}
-                        onEdit={(e) => {
-                          setEditingEntry(e);
-                          setIsEditorOpen(true);
-                        }}
-                        onDelete={handleDeleteMistake}
-                        onToggleSundayFlag={handleToggleSundayFlag}
-                        onToggleMastered={(id) => handleToggleMastered(id)}
-                        paperGridStyle={preferences.paperGridStyle}
-                        handwrittenFont={preferences.handwrittenFont}
-                        isSelected={selectedMistakeIds.includes(entry.id)}
-                        onToggleSelect={handleToggleSelectMistake}
-                      />
-                    ))}
+                    <AnimatePresence mode="popLayout">
+                      {filteredMistakes.map((entry) => (
+                        <MistakeCard
+                          key={entry.id}
+                          entry={entry}
+                          subject={subjects.find((s) => s.id === entry.subjectId)}
+                          onEdit={(e) => {
+                            setEditingEntry(e);
+                            setIsEditorOpen(true);
+                          }}
+                          onDelete={handleDeleteMistake}
+                          onToggleSundayFlag={handleToggleSundayFlag}
+                          onToggleMastered={(id) => handleToggleMastered(id)}
+                          paperGridStyle={preferences.paperGridStyle}
+                          handwrittenFont={preferences.handwrittenFont}
+                          isSelected={selectedMistakeIds.includes(entry.id)}
+                          onToggleSelect={handleToggleSelectMistake}
+                        />
+                      ))}
+                    </AnimatePresence>
                   </div>
                 </>
               )}
