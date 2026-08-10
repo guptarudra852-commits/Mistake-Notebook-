@@ -99,20 +99,26 @@ export const MistakeEditorModal: React.FC<MistakeEditorModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !question.trim()) {
-      alert('Please fill in at least the Title and Problem Statement.');
+    const subObj = subjects.find((s) => s.id === subjectId);
+    const subName = subObj ? subObj.name : 'Subject';
+
+    const finalTitle = title.trim() || (imageUrl ? `Photo Entry (${subName})` : '');
+    const finalQuestion = question.trim() || (imageUrl ? 'Attached mistake photo below.' : '');
+
+    if (!finalTitle || !finalQuestion) {
+      alert('Please fill in at least the Title and Problem Statement, or upload a Photo.');
       return;
     }
 
     onSave({
       id: initialEntry?.id,
-      title: title.trim(),
+      title: finalTitle,
       subjectId,
       topic: topic.trim() || 'General',
-      question: question.trim(),
+      question: finalQuestion,
       myWrongAnswer: myWrongAnswer.trim(),
       correctAnswer: correctAnswer.trim(),
-      goldenTakeaway: goldenTakeaway.trim() || 'Review problem steps carefully before answering.',
+      goldenTakeaway: goldenTakeaway.trim() || 'Review problem photo and solution steps.',
       mistakeType,
       severity,
       flaggedForSunday,

@@ -494,7 +494,34 @@ export default function App() {
       <CameraScanModal
         isOpen={isCameraOpen}
         onClose={() => setIsCameraOpen(false)}
-        onCapture={(dataUrl) => {
+        subjects={subjects}
+        currentSubjectId={filter.subjectId}
+        onSavePhotoOnly={(photoData) => {
+          setIsCameraOpen(false);
+          const sub = subjects.find((s) => s.id === photoData.subjectId) || subjects[0];
+          const subName = sub ? sub.name : 'General';
+          const newEntry: MistakeEntry = {
+            id: `mistake_${Date.now()}`,
+            title: photoData.title?.trim() || `Photo Note (${subName})`,
+            subjectId: photoData.subjectId,
+            topic: 'Photo Upload',
+            dateAdded: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            question: 'Attached problem photo below.',
+            myWrongAnswer: '',
+            correctAnswer: '',
+            goldenTakeaway: 'Review photo solution steps.',
+            mistakeType: 'conceptual',
+            severity: 3,
+            revisionStatus: 'needs_review',
+            flaggedForSunday: true,
+            reviewHistory: [],
+            tags: ['photo-only', 'quick-upload'],
+            imageUrl: photoData.imageUrl,
+          };
+          handleUpdateMistakes([newEntry, ...mistakes]);
+        }}
+        onCaptureImage={(dataUrl) => {
           setIsCameraOpen(false);
           // If we are currently editing an entry, attach to it or start a new mistake with the snapshot
           if (editingEntry) {
@@ -502,20 +529,47 @@ export default function App() {
           } else {
             setEditingEntry({
               id: '',
-              subjectId: subjects[0]?.id || 's1',
+              subjectId: filter.subjectId !== 'all' ? filter.subjectId : (subjects[0]?.id || 's1'),
               title: 'Camera Scanned Problem',
               topic: 'Scanned Worksheet',
+              dateAdded: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
               question: 'Attached image scan below.',
-              whyWrong: '',
+              myWrongAnswer: '',
               correctAnswer: '',
-              goldenTakeaway: '',
+              goldenTakeaway: 'Review steps carefully.',
               mistakeType: 'calculation',
               severity: 3,
               revisionStatus: 'needs_review',
-              reviewCount: 0,
-              lastReviewedDate: null,
-              createdDate: new Date().toISOString().split('T')[0],
               flaggedForSunday: true,
+              reviewHistory: [],
+              tags: ['scanned', 'camera'],
+              imageUrl: dataUrl,
+            });
+          }
+          setIsEditorOpen(true);
+        }}
+        onCapture={(dataUrl) => {
+          setIsCameraOpen(false);
+          if (editingEntry) {
+            setEditingEntry({ ...editingEntry, imageUrl: dataUrl });
+          } else {
+            setEditingEntry({
+              id: '',
+              subjectId: filter.subjectId !== 'all' ? filter.subjectId : (subjects[0]?.id || 's1'),
+              title: 'Camera Scanned Problem',
+              topic: 'Scanned Worksheet',
+              dateAdded: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              question: 'Attached image scan below.',
+              myWrongAnswer: '',
+              correctAnswer: '',
+              goldenTakeaway: 'Review steps carefully.',
+              mistakeType: 'calculation',
+              severity: 3,
+              revisionStatus: 'needs_review',
+              flaggedForSunday: true,
+              reviewHistory: [],
               tags: ['scanned', 'camera'],
               imageUrl: dataUrl,
             });

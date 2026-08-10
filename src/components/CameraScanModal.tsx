@@ -1,16 +1,25 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, X, Upload, Check, RefreshCw, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Camera, X, Upload, Check, RefreshCw, Image as ImageIcon, BookOpen, Sparkles } from 'lucide-react';
+import { Subject } from '../types';
 
 interface CameraScanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCaptureImage: (imageDataUrl: string) => void;
+  onCaptureImage?: (imageDataUrl: string) => void;
+  onCapture?: (imageDataUrl: string) => void;
+  subjects?: Subject[];
+  currentSubjectId?: string;
+  onSavePhotoOnly?: (photoData: { imageUrl: string; subjectId: string; title?: string }) => void;
 }
 
 export const CameraScanModal: React.FC<CameraScanModalProps> = ({
   isOpen,
   onClose,
   onCaptureImage,
+  onCapture,
+  subjects = [],
+  currentSubjectId,
+  onSavePhotoOnly,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,6 +27,22 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [capturedPreview, setCapturedPreview] = useState<string | null>(null);
+
+  const defaultSubject =
+    currentSubjectId && currentSubjectId !== 'all'
+      ? currentSubjectId
+      : subjects[0]?.id || 's1';
+
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(defaultSubject);
+  const [customTitle, setCustomTitle] = useState<string>('');
+
+  useEffect(() => {
+    if (currentSubjectId && currentSubjectId !== 'all') {
+      setSelectedSubjectId(currentSubjectId);
+    } else if (subjects.length > 0) {
+      setSelectedSubjectId(subjects[0].id);
+    }
+  }, [currentSubjectId, subjects, isOpen]);
 
   // Initialize camera stream when modal opens
   useEffect(() => {
@@ -83,11 +108,30 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
     }
   };
 
-  const handleConfirmImage = () => {
+  const handleConfirmImageFullEditor = () => {
     if (capturedPreview) {
-      onCaptureImage(capturedPreview);
+      if (typeof onCaptureImage === 'function') {
+        onCaptureImage(capturedPreview);
+      } else if (typeof onCapture === 'function') {
+        onCapture(capturedPreview);
+      }
       onClose();
       setCapturedPreview(null);
+    }
+  };
+
+  const handleConfirmImagePhotoOnly = () => {
+    if (capturedPreview && onSavePhotoOnly) {
+      onSavePhotoOnly({
+        imageUrl: capturedPreview,
+        subjectId: selectedSubjectId,
+        title: customTitle.trim(),
+      });
+      onClose();
+      setCapturedPreview(null);
+      setCustomTitle('');
+    } else {
+      handleConfirmImageFullEditor();
     }
   };
 
@@ -103,7 +147,7 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
           <div className="flex items-center space-x-2">
             <Camera className="w-5 h-5 text-amber-400" />
             <h3 className="text-base font-serif font-bold text-amber-100">
-              Scan / Upload Textbook Problem
+              Photo Upload / Camera Scanner
             </h3>
           </div>
           <button
@@ -116,14 +160,49 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
 
         {/* Content Body */}
         <div className="p-4 flex-1 flex flex-col items-center justify-center space-y-4">
+          
+          {/* Subject Selection Option (Shown always) */}
+          {subjects.length > 0 && (
+            <div className="w-full bg-stone-950/80 p-3 rounded-2xl border border-amber-900/40 space-y-2">
+              <label className="block text-xs font-bold text-amber-300 uppercase tracking-wider">
+                Select Subject *
+              </label>
+              <select
+                value={selectedSubjectId}
+                onChange={(e) => setSelectedSubjectId(e.target.value)}
+                id="photo-upload-subject-select"
+                className="w-full bg-stone-900 border border-amber-800/80 text-amber-100 text-sm font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                {subjects.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {capturedPreview ? (
             /* Preview captured image */
-            <div className="relative w-full max-h-80 overflow-hidden rounded-2xl border-2 border-amber-500/50 bg-black">
-              <img
-                src={capturedPreview}
-                alt="Captured mistake problem"
-                className="w-full h-full object-contain max-h-80"
-              />
+            <div className="w-full space-y-3">
+              <div className="relative w-full max-h-72 overflow-hidden rounded-2xl border-2 border-amber-500/50 bg-black flex items-center justify-center">
+                <img
+                  src={capturedPreview}
+                  alt="Captured mistake problem"
+                  className="w-full h-full object-contain max-h-72"
+                />
+              </div>
+
+              {/* Optional Title/Caption Input */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Optional Title / Note (e.g. Question 14 Page 52)..."
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2 text-xs text-amber-100 placeholder-stone-500 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                />
+              </div>
             </div>
           ) : isCameraActive ? (
             /* Live Camera Stream */
@@ -159,45 +238,58 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
           {/* Action Buttons */}
           <div className="w-full space-y-3 pt-2">
             {capturedPreview ? (
-              <div className="flex space-x-3">
+              <div className="flex flex-col gap-2">
+                {/* Subject-Only Quick Save Button */}
                 <button
-                  onClick={handleRetake}
-                  className="flex-1 py-3 px-4 bg-stone-800 text-stone-200 rounded-xl font-bold text-xs hover:bg-stone-700 flex items-center justify-center space-x-2 min-h-[44px] touch-manipulation"
+                  onClick={handleConfirmImagePhotoOnly}
+                  id="btn-photo-subject-only-save"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-lg min-h-[46px] touch-manipulation transition-all active:scale-[0.98]"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Retake Photo</span>
+                  <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+                  <span>Save Photo to Subject Only</span>
                 </button>
-                <button
-                  onClick={handleConfirmImage}
-                  className="flex-1 py-3 px-4 bg-amber-400 text-amber-950 rounded-xl font-bold text-xs hover:bg-amber-300 flex items-center justify-center space-x-2 shadow-lg min-h-[44px] touch-manipulation"
-                >
-                  <Check className="w-4 h-4 stroke-[3]" />
-                  <span>Use Photo</span>
-                </button>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleRetake}
+                    className="flex-1 py-2.5 px-3 bg-stone-800 text-stone-200 rounded-xl font-bold text-xs hover:bg-stone-700 flex items-center justify-center space-x-1.5 min-h-[42px] touch-manipulation"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Retake</span>
+                  </button>
+
+                  <button
+                    onClick={handleConfirmImageFullEditor}
+                    className="flex-1 py-2.5 px-3 bg-amber-500/20 text-amber-200 border border-amber-500/50 hover:bg-amber-500/30 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 min-h-[42px] touch-manipulation"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Open Detailed Editor</span>
+                  </button>
+                </div>
               </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-                  {isCameraActive && (
-                    <button
-                      onClick={handleTakeSnapshot}
-                      className="py-3 px-4 bg-amber-400 text-amber-950 rounded-xl font-bold text-xs hover:bg-amber-300 flex items-center justify-center space-x-2 shadow-lg min-h-[48px] touch-manipulation"
-                    >
-                      <Camera className="w-5 h-5" />
-                      <span>Snap Photo</span>
-                    </button>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                {isCameraActive && (
+                  <button
+                    onClick={handleTakeSnapshot}
+                    className="py-3 px-4 bg-amber-400 text-amber-950 rounded-xl font-bold text-xs hover:bg-amber-300 flex items-center justify-center space-x-2 shadow-lg min-h-[48px] touch-manipulation"
+                  >
+                    <Camera className="w-5 h-5" />
+                    <span>Snap Photo</span>
+                  </button>
+                )}
 
-                  <label className={`py-3 px-4 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer min-h-[48px] touch-manipulation ${!isCameraActive ? 'col-span-full' : ''}`}>
-                    <Upload className="w-4 h-4 text-amber-400" />
-                    <span>Upload from Gallery</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                <label className={`py-3 px-4 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 cursor-pointer min-h-[48px] touch-manipulation ${!isCameraActive ? 'col-span-full' : ''}`}>
+                  <Upload className="w-4 h-4 text-amber-400" />
+                  <span>Upload Photo from Device</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
             )}
           </div>
         </div>
@@ -205,3 +297,4 @@ export const CameraScanModal: React.FC<CameraScanModalProps> = ({
     </div>
   );
 };
+

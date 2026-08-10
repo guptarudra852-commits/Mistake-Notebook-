@@ -18,6 +18,10 @@ import {
   Square,
   HelpCircle,
   Sparkles,
+  Maximize2,
+  ZoomIn,
+  Image as ImageIcon,
+  X,
 } from 'lucide-react';
 import { MistakeEntry, Subject, MistakeType } from '../types';
 
@@ -48,6 +52,7 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
 }) => {
   const [showAnswer, setShowAnswer] = useState<boolean>(false);
   const [isSuccessAnimating, setIsSuccessAnimating] = useState<boolean>(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState<boolean>(false);
 
   const handleMasteredClick = (id: string) => {
     if (entry.revisionStatus !== 'mastered') {
@@ -229,6 +234,36 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
           </p>
         </div>
 
+        {/* Attached Photo Thumbnail Preview */}
+        {entry.imageUrl && (
+          <div className="mb-4">
+            <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-900 mb-1.5">
+              <ImageIcon className="w-4 h-4 text-amber-700" />
+              <span>Attached Problem Photo:</span>
+            </div>
+            <div
+              onClick={() => setIsImageModalOpen(true)}
+              id={`thumbnail-image-${entry.id}`}
+              className="relative w-full rounded-xl overflow-hidden border-2 border-amber-300/90 bg-stone-900 group cursor-pointer shadow-sm hover:shadow-md hover:border-amber-400 transition-all"
+            >
+              <img
+                src={entry.imageUrl}
+                alt={entry.title || 'Attached mistake photo'}
+                className="w-full h-48 object-cover object-center group-hover:scale-105 transition-transform duration-300 opacity-90 group-hover:opacity-100"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent flex items-end justify-between p-2.5">
+                <span className="text-[11px] font-bold text-amber-100 bg-stone-900/80 px-2.5 py-1 rounded-md backdrop-blur-xs flex items-center space-x-1.5 border border-amber-500/40">
+                  <Maximize2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Tap for Full-Screen View</span>
+                </span>
+                <span className="p-1.5 bg-amber-400 text-amber-950 rounded-lg font-bold text-xs shadow-md group-hover:scale-110 transition-transform">
+                  <ZoomIn className="w-4 h-4" />
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* My Wrong Answer / Misconception */}
         <div className="mb-4 bg-rose-50/90 border-l-4 border-rose-500 p-3.5 rounded-r-xl shadow-xs">
           <div className="flex items-center space-x-1.5 text-xs font-bold text-rose-900 mb-1">
@@ -392,6 +427,71 @@ export const MistakeCard: React.FC<MistakeCardProps> = ({
         </div>
 
       </div>
+
+      {/* Full-Screen Image Inspection Modal */}
+      <AnimatePresence>
+        {isImageModalOpen && entry.imageUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-stone-950/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            {/* Modal Header */}
+            <div
+              className="flex items-center justify-between w-full max-w-5xl mx-auto z-10 bg-stone-900/90 p-3.5 rounded-2xl border border-stone-800 text-stone-100 shadow-2xl backdrop-blur-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center space-x-2.5 truncate">
+                <ImageIcon className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                <h4 className="text-sm sm:text-base font-bold text-amber-100 truncate">
+                  {entry.title || 'Attached Mistake Photo'}
+                </h4>
+              </div>
+              <button
+                onClick={() => setIsImageModalOpen(false)}
+                className="p-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-amber-200 transition-colors"
+                title="Close Full Screen View"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Image View Area */}
+            <div
+              className="flex-1 flex items-center justify-center p-2 sm:p-4 my-3 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                src={entry.imageUrl}
+                alt={entry.title || 'Full screen mistake photo'}
+                className="max-w-full max-h-[78vh] object-contain rounded-2xl shadow-2xl border border-stone-800/80 bg-black/50"
+              />
+            </div>
+
+            {/* Modal Footer Caption */}
+            <div
+              className="w-full max-w-5xl mx-auto bg-stone-900/90 p-3 rounded-2xl border border-stone-800 text-center text-xs text-amber-200/80 backdrop-blur-md flex items-center justify-between"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="font-semibold">Subject: {subject?.name || 'General'}</span>
+              <span className="text-[11px] text-stone-400 hidden sm:inline">Click anywhere outside to close</span>
+              <button
+                onClick={() => setIsImageModalOpen(false)}
+                className="px-3 py-1 bg-amber-400 text-amber-950 rounded-lg font-bold text-xs hover:bg-amber-300 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
